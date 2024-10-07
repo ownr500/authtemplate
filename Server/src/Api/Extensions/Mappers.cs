@@ -1,44 +1,47 @@
-﻿using API.Controllers.DTO;
-using API.Models;
-using API.Models.Entities;
-using API.Models.Request;
+﻿using System.Security.Claims;
+using API.Controllers.Dtos;
+using API.Core.Entities;
+using API.Core.Enums;
+using API.Core.Models;
+using API.Core.Options;
 using FluentResults;
 
 namespace API.Extensions;
 
 public static class Mappers
 {
-    public static RegisterRequest ToRequest(this RegisterRequestDto dto)
+    public static RegisterModel ToRequest(this RegisterRequestDto dto)
     {
-        return new RegisterRequest(
+        return new RegisterModel(
             dto.FirstName,
             dto.LastName,
+            dto.Email,
             dto.Age,
             dto.Login,
             dto.Password
         );
     }
-    
-    public static ChangeRequest ToRequest(this ChangeRequestDto requestDto)
+
+    public static UpdateFirstLastNameModel ToModel(this UpdateFirstLastNameRequestDto requestDto)
     {
-        return new ChangeRequest(
+        return new UpdateFirstLastNameModel(
             requestDto.FirstName,
             requestDto.LastName
         );
     }
 
-    public static PasswordChangeModel ToModel(this PasswordChangeDto dto)
+    public static ChangePasswordModel ToModel(this PasswordChangeDto dto)
     {
-        return new PasswordChangeModel(
+        return new ChangePasswordModel(
             Login: dto.Login,
             CurrentPassword: dto.CurrentPassword,
             NewPassword: dto.NewPassword
         );
     }
 
-    public static SinginRequestModel ToModel(this SigninRequestDto dto)
+    public static SingInModel ToModel(this SigninRequestDto dto)
     {
-        return new SinginRequestModel(
+        return new SingInModel(
             dto.Login,
             dto.Password);
     }
@@ -47,6 +50,7 @@ public static class Mappers
     {
         return result.Errors.Select(x => x.Message).ToList();
     }
+
     public static List<string> GetErrors<T>(this Result<T> result)
     {
         return result.Errors.Select(x => x.Message).ToList();
@@ -55,12 +59,12 @@ public static class Mappers
     public static UserModel ToModel(this UserEntity user)
     {
         return new UserModel(
-           user.Id,
-           user.FirstName,
-           user.LastName,
-           user.Login,
-           user.UserRoles.Select(x => x.Role.RoleName).ToList()
-            );
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.Login,
+            user.UserRoles.Select(x => x.Role.Role).ToList()
+        );
     }
 
     public static List<UserDto> ToDtoList(this List<UserModel> list)
@@ -69,7 +73,19 @@ public static class Mappers
         return userDtos;
     }
 
-    public static UserDto ToDto(this UserModel model)
+    public static GenerateTokenModel ToModel(this TokenInfo info, List<Claim> claims)
+    {
+        return new GenerateTokenModel(claims, info);
+    }
+
+    public static List<Claim> ToClaims(this IReadOnlyCollection<Role> roles)
+    {
+        return roles
+            .Select(x => new Claim(ClaimTypes.Role, x.ToString()))
+            .ToList();
+    }
+
+    private static UserDto ToDto(this UserModel model)
     {
         return new UserDto(
             model.UserId,

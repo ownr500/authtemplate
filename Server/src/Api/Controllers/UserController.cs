@@ -1,6 +1,6 @@
-﻿using API.Controllers.DTO;
+﻿using API.Controllers.Dtos;
+using API.Core.Services;
 using API.Extensions;
-using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,9 +27,9 @@ public class UserController : ControllerBase
     }
 
     [HttpPatch]
-    public async Task<IActionResult> Change([FromBody] ChangeRequestDto requestDto, CancellationToken ct)
+    public async Task<IActionResult> UpdateFirstLastName([FromBody] UpdateFirstLastNameRequestDto requestDto, CancellationToken ct)
     {
-        var result = await _userService.ChangeAsync(requestDto.ToRequest(), ct);
+        var result = await _userService.UpdateFirstLastNameAsync(requestDto.ToModel(), ct);
         if (result.IsSuccess) return Ok();
         return new ConflictObjectResult(new BusinessErrorDto(result.GetErrors()));
     }
